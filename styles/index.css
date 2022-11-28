@@ -1,0 +1,11 @@
+a{
+    font-size: 20px;
+    text-decoration: none;
+}
+.btx{
+    color: white;
+}
+.btx:hover{
+    color: darkblue;
+    text-decoration: none;
+}
