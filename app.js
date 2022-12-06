@@ -14,17 +14,14 @@ const session = require("express-session");
 const path = require('path');
 const app = express();
 
-//require do bodyparser responsável por capturar valores do form
 const bodyParser = require("body-parser");
 
 //require do mysql
 const mysql = require("mysql"); 
 const { resolveSoa } = require('dns');
 
-//criando a sessão
 app.use(session({secret: "ssshhhhh"}));
 
-//definindo pasta pública para acesso
 app.use(express.static('public'))
 
 //config engines
@@ -36,19 +33,17 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 
-//conexão com banco mysql
 function conectiondb(){
     var con = mysql.createConnection({
-        host: 'localhost', // O host do banco. Ex: localhost
-        user: 'root', // Um usuário do banco. Ex: user 
-        password: 'Niraj@2003', // A senha do usuário. Ex: user123
-        database: 'dblogin' // A base de dados a qual a aplicação irá se conectar, deve ser a mesma onde foi executado o Código 1. Ex: node_mysql
+        host: 'localhost',
+        user: 'root', 
+        password: 'Niraj@2003', 
+        database: 'dblogin' 
     });
 
-    //verifica conexao com o banco
     con.connect((err) => {
         if (err) {
-            console.log('Erro connecting to database...', err)
+            console.log('Error connecting to database...', err)
             return
         }
         console.log('Connection established!')
@@ -58,7 +53,6 @@ function conectiondb(){
 }
 
 
-//rota padrao
 app.get('/', (req, res) => {
     var message = ' ';
     req.session.destroy();
@@ -66,16 +60,13 @@ app.get('/', (req, res) => {
 });
 
 
-//rota para registro
 app.get('/views/registro', (req, res)=>{
     res.redirect('../');
     //res.render('views/registro', {message:message});
 });
 
-//rota para home
 app.get("/views/home", function (req, res){
     
-    //verifica se existe seção ativa
     if (req.session.user){
         var con = conectiondb();
         var query2 = 'SELECT * FROM users WHERE email LIKE ?';
@@ -90,13 +81,11 @@ app.get("/views/home", function (req, res){
     
 });
 
-//rota para login
 app.get("/views/login", function(req, res){
     var message = ' ';
     res.render('views/login', {message:message});
 });
 
-//método post do register
 app.post('/register', function (req, res){
 
     var username = req.body.nome;
@@ -110,7 +99,7 @@ app.post('/register', function (req, res){
 
     con.query(queryConsulta, [email], function (err, results){
         if (results.length > 0){            
-            var message = 'E-mail já cadastrado';
+            var message = 'E-mail Not valid';
             res.render('views/registro', { message: message });
         }else{
             var query = 'INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?)';
@@ -119,7 +108,7 @@ app.post('/register', function (req, res){
                 if (err){
                     throw err;
                 }else{
-                    console.log ("Usuario adicionado com email " + email);
+                    console.log ("User added with email " + email);
                     var message = "ok";
                     res.render('views/registro', { message: message });
                 }        
@@ -128,21 +117,17 @@ app.post('/register', function (req, res){
     });
 });
 
-//método post do login
 app.post('/log', function (req, res){
-    //pega os valores digitados pelo usuário
     var email = req.body.email;
     var pass = req.body.pass;
-    //conexão com banco de dados
     var con = conectiondb();
-    //query de execução
     var query = 'SELECT * FROM users WHERE pass = ? AND email LIKE ?';
     
     //execução da query
     con.query(query, [pass, email], function (err, results){
         if (results.length > 0){
             req.session.user = email; //seção de identificação            
-            console.log("Login feito com sucesso!");
+            console.log("Login Successful!");
             res.render('views/home', {message:results});
         }else{
             var message = 'Login incorreto!';
@@ -152,7 +137,6 @@ app.post('/log', function (req, res){
 });
 
 app.post('/update', function (req, res){
-    //pega os valores digitados pelo usuário
     
     console.log("entrou");
     
@@ -160,13 +144,10 @@ app.post('/update', function (req, res){
     var pass = req.body.pwd;
     var username = req.body.nome;
     var idade = req.body.idade;
-    //conexão com banco de dados
     var con = conectiondb();
-    //query de execução
     var query = 'UPDATE users SET username = ?, pass = ?, idade = ? WHERE email LIKE ?';
     
 
-    //execução da query
     con.query(query, [username, pass, idade, req.session.user], function (err, results){
         
         var query2 = 'SELECT * FROM users WHERE email LIKE ?';
@@ -178,21 +159,16 @@ app.post('/update', function (req, res){
 });
 
 app.post('/delete', function (req, res){
-    //pega os valores digitados pelo usuário
     
     var username = req.body.nome;
     
-    //conexão com banco de dados
     var con = conectiondb();
-    //query de execução
     var query = 'DELETE FROM users WHERE email LIKE ?';
     
 
-    //execução da query
     con.query(query, [req.session.user], function (err, results){
         res.redirect ('/');
     });
 });
 
-//executa servidor
-app.listen(8081, () => console.log(`App listening on port!`));
+app.listen(8081, () => console.log(`App listening on port 8081!`));
